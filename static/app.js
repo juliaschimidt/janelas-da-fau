@@ -1,15 +1,27 @@
 const $ = (id) => document.getElementById(id);
 const stage = $('stage');
 
-// celular deitado usa um layout compacto (960×440); computador usa 1440×900
+// computador: a tela inteira (1440×900) é escalada pra caber.
+// celular deitado: layout próprio que ocupa a tela toda, e a janela cresce até onde couber.
 const celular = matchMedia('(orientation: landscape) and (max-height: 560px)');
 function fit() {
-  document.body.classList.toggle('m', celular.matches);
-  const [w, h] = celular.matches ? [960, 440] : [1440, 900];
-  const k = Math.min(innerWidth / w, innerHeight / h);
-  stage.style.transform = `translate(-50%,-50%) scale(${k})`;
+  const m = celular.matches, W = $('W'), cell = $('Wcell');
+  document.body.classList.toggle('m', m);
+  if (!m) {
+    W.style.width = '1202px';
+    stage.style.transform = `translate(-50%,-50%) scale(${Math.min(innerWidth / 1440, innerHeight / 900)})`;
+    return;
+  }
+  stage.style.transform = 'none';
+  const cs = getComputedStyle(W), v = (n) => parseFloat(cs.getPropertyValue(n)) || 0;
+  const bw = v('--bw'), fw = v('--fw'), extraH = 2 * bw + v('--banh') + fw + v('--sill') + bw;
+  const w = Math.min(cell.clientWidth - 2 * v('--ov'), (cell.clientHeight - extraH) * 2.35 + 2 * (bw + fw));
+  W.style.width = `${Math.max(120, Math.floor(w))}px`;
 }
-addEventListener('resize', fit); fit();
+addEventListener('resize', fit);
+addEventListener('orientationchange', () => setTimeout(fit, 300));
+if (celular.addEventListener) celular.addEventListener('change', fit); else celular.addListener(fit);
+fit();
 
 document.querySelectorAll('[data-i]').forEach((el) => { el.innerHTML = I[el.dataset.i]; });
 $('ck').innerHTML = I.clock(20);
@@ -176,13 +188,12 @@ function tickTimer() {
   const reported = d && denunciados().includes(d.id);
   $('bRep').disabled = !d || reported;
   $('bRep').lastChild.textContent = reported ? 'denunciado' : 'denunciar';
-  $('fila').textContent = st.agora && st.agora.fila ? `nº ${d.numero} · +${st.agora.fila} na fila` : d ? `nº ${d.numero}` : '';
+  $('fila').textContent = d ? `nº ${d.numero}` : '';
   if (!d) { $('tmv').textContent = '--:--'; $('tml').innerHTML = 'janela<br>vazia'; $('pg').style.width = '0'; return; }
   const now = (Date.now() + st.offset) / 1000, rest = Math.max(0, d.fim - now);
-  if (rest <= 0) { $('tmv').textContent = '00:00'; $('tml').innerHTML = 'fica até o<br>próximo'; $('pg').style.width = '100%'; return; }
-  if (st.agora.fila && now >= d.fim) loadAgora();
+  if (rest <= 0) { st.agora.desenho = null; st.dirty = true; tickTimer(); loadAgora(); return; }
   $('tmv').textContent = `${String(Math.floor(rest / 60)).padStart(2, '0')}:${String(Math.floor(rest % 60)).padStart(2, '0')}`;
-  $('tml').innerHTML = 'até<br>trocar';
+  $('tml').innerHTML = 'até<br>sair';
   $('pg').style.width = `${(100 * (1 - rest / (d.fim - d.inicio))).toFixed(1)}%`;
 }
 const denunciados = () => JSON.parse(localStorage.getItem('denunciados') || '[]');
@@ -233,7 +244,7 @@ $('bSend').onclick = async () => {
   if (!temTraco()) return toast('desenhe alguma coisa antes de enviar ✎');
   const ok = await modal({
     titulo: 'ENVIAR PRA JANELA?',
-    corpo: `<canvas id="mprev" width="800" height="340"></canvas>Seu desenho vai ser projetado na parede da rampa da FAU, um por vez. Depois de enviado, não dá pra editar.`,
+    corpo: `<canvas id="mprev" width="800" height="340"></canvas>Seu desenho entra na parede na hora, no lugar do que está lá agora, e fica até 20 min (ou até alguém mandar outro). Depois de enviado, não dá pra editar.`,
     ok: 'enviar', cancelar: 'continuar desenhando',
     onOpen: () => renderDrawing($('mprev'), makeLayer(800, 340), st.strokes, 0, 0, opac()),
   });
@@ -245,12 +256,12 @@ $('bSend').onclick = async () => {
       body: JSON.stringify({ tracos: st.strokes, clima: st.clima }),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status} ${await r.text()}`);
-    const res = await r.json(), espera = Math.ceil((res.inicio - res.agora) / 60);
+    const res = await r.json();
     st.strokes = []; afterEdit();
     await loadAgora();
     await modal({
       titulo: 'ENVIADO! ✦',
-      corpo: `Seu desenho é o <b>nº ${res.numero}</b>. ${espera > 0 ? `Ele entra na janela em cerca de <b>${espera} min</b>.` : 'Ele já está na janela agora!'}<div class="note">olha pra parede da rampa →</div>`,
+      corpo: `Seu desenho é o <b>nº ${res.numero}</b>. Ele já está na janela agora!<div class="note">olhe para a parede</div>`,
       ok: 'desenhar outro', cancelar: '',
     });
   } catch (e) {
@@ -289,7 +300,7 @@ $('bRep').onclick = async () => {
 
 $('sobre').onclick = () => modal({
   titulo: 'COMO FUNCIONA',
-  corpo: 'Desenhe o que você veria por esta janela e envie. Cada desenho fica <b>20 min</b> projetado na parede da rampa, um por vez.<br><br>O clima de agora na Cidade Universitária muda o seu traço: a <b>temperatura</b> escolhe as 3 cores, o <b>vento</b> faz o traço balançar e a <b>umidade</b> deixa o traço transparente (quanto mais úmido, mais transparente).',
+  corpo: 'Desenhe o que você veria por esta janela e envie. Cada desenho fica até <b>20 min</b> projetado na parede da rampa, ou até alguém mandar um novo.<br><br>O clima de agora na Cidade Universitária muda o seu traço: a <b>temperatura</b> escolhe as 3 cores, o <b>vento</b> faz o traço balançar e a <b>umidade</b> deixa o traço transparente (quanto mais úmido, mais transparente).',
   ok: 'bora desenhar', cancelar: '',
 });
 

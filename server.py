@@ -12,6 +12,8 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 BASE = os.path.dirname(os.path.abspath(__file__))
 STATIC = os.path.join(BASE, "static")
+if not os.path.isdir(STATIC):  # se os arquivos da pasta static foram enviados soltos, junto do server.py
+    STATIC = BASE
 DATA = os.path.join(BASE, "data")
 DRAWINGS = os.path.join(DATA, "desenhos.json")
 REPORTS = os.path.join(DATA, "denuncias.json")
@@ -89,6 +91,7 @@ def fetch_open_meteo():
         "https://api.open-meteo.com/v1/forecast"
         f"?latitude={LAT}&longitude={LON}"
         "&current=temperature_2m,relative_humidity_2m,wind_speed_10m&wind_speed_unit=kmh"
+        "&timezone=America%2FSao_Paulo"
     )
     cur = json.loads(http_get(url))["current"]
     return {
@@ -98,6 +101,11 @@ def fetch_open_meteo():
         "fonte": "modelo",
         "medido": cur["time"].replace("T", " "),
     }
+
+
+def agora_sp():
+    """Data e hora de agora em São Paulo (UTC-3, sem horário de verão)."""
+    return time.strftime("%Y-%m-%d %H:%M", time.gmtime(time.time() - 3 * 3600))
 
 
 def fetch_weather():
@@ -111,6 +119,9 @@ def fetch_weather():
         except Exception as e:  # noqa: BLE001 - qualquer falha cai para a próxima fonte
             print("clima:", source, repr(e), flush=True)
     if data:
+        # a fonte reserva arredonda o horário para os próximos 15 min; nunca mostra horário no futuro
+        if data.get("medido") and data["medido"] > agora_sp():
+            data["medido"] = agora_sp()
         weather_cache.update(t=time.time(), data=data, ok=time.time())
     elif weather_cache.get("data") and time.time() - weather_cache.get("ok", 0) < STALE_OK:
         data = weather_cache["data"]
@@ -130,19 +141,9 @@ def active(drawings):
 
 
 def current_drawing(drawings, now):
-    shown = [d for d in active(drawings) if d["inicio"] <= now]
+    """O desenho na parede: o último enviado, enquanto não passaram os 20 min."""
+    shown = [d for d in active(drawings) if d["inicio"] <= now < d["fim"]]
     return shown[-1] if shown else None
-
-
-def reschedule(drawings, now):
-    """Depois de remover um desenho, puxa a fila pra frente."""
-    t = now
-    for d in active(drawings):
-        if d["inicio"] <= now:
-            t = max(now, d["fim"])
-        else:
-            d["inicio"], d["fim"] = t, t + SLOT_SECONDS
-            t = d["fim"]
 
 
 def status(d, cur, now):
@@ -150,7 +151,7 @@ def status(d, cur, now):
         return "removido"
     if cur and d["id"] == cur["id"]:
         return "na parede"
-    return "na fila" if d["inicio"] > now else "já exibido"
+    return "já exibido"
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -204,12 +205,11 @@ class Handler(SimpleHTTPRequestHandler):
             with lock:
                 drawings = load(DRAWINGS)
             cur = current_drawing(drawings, now)
-            fila = sum(1 for d in active(drawings) if d["inicio"] > now)
             desenho = public(cur) if cur else None
             # a parede pergunta a cada 2 s; se ela já tem este desenho, não reenvia os traços
             if desenho and urllib.parse.parse_qs(url.query).get("tenho") == [cur["id"]]:
                 desenho.pop("tracos")
-            return self.send_json({"agora": now, "desenho": desenho, "fila": fila})
+            return self.send_json({"agora": now, "desenho": desenho})
         if url.path in ("/api/moderacao", "/api/moderacao/baixar"):
             if not self.mod_ok():
                 return
@@ -255,8 +255,11 @@ class Handler(SimpleHTTPRequestHandler):
             now = time.time()
             with lock:
                 drawings = load(DRAWINGS)
-                vivos = active(drawings)
-                inicio = max(now, vivos[-1]["fim"]) if vivos else now
+                # o desenho novo entra na hora, no lugar do que estava na parede
+                for antigo in drawings:
+                    if antigo["fim"] > now:
+                        antigo["fim"] = now
+                inicio = now
                 d = {
                     "id": f"{int(now * 1000):x}",
                     "numero": len(drawings) + 1,
@@ -287,9 +290,8 @@ class Handler(SimpleHTTPRequestHandler):
                 if not d:
                     return self.send_json({"erro": "desenho não encontrado"}, 404)
                 d["removido"] = True
-                if d["inicio"] <= now < d["fim"]:
+                if d["fim"] > now:
                     d["fim"] = now
-                reschedule(drawings, now)
                 save(DRAWINGS, drawings)
             return self.send_json({"ok": True})
         return self.send_json({"erro": "não encontrado"}, 404)

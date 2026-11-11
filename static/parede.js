@@ -12,8 +12,8 @@ document.querySelectorAll('[data-i]').forEach((el) => { el.innerHTML = I[el.data
 $('W').innerHTML = win('dd', 22);
 $('dd').innerHTML = `<canvas id="cv" width="${CW}" height="${CH}"></canvas>`;
 $('W').querySelector('.glass').insertAdjacentHTML('beforeend',
-  `<div class="tmr" id="tmr" hidden>${I.clock(24)}<span><b id="tmv">--:--</b> <span id="tml">até o próximo desenho</span></span><span class="prog"><i id="pg"></i></span><span class="n" id="num"></span></div>
-   <div class="vazio" id="vazio">a janela está esperando o primeiro desenho<small>escaneie o QR code e desenhe o que você veria por aqui</small></div>`);
+  `<div class="tmr" id="tmr" hidden>${I.clock(24)}<span><b id="tmv">--:--</b> <span id="tml">restantes</span></span><span class="prog"><i id="pg"></i></span><span class="n" id="num"></span></div>
+   <div class="vazio" id="vazio">a janela está esperando um desenho<small>escaneie o QR code e desenhe o que você veria por aqui</small></div>`);
 
 // o QR code vem de uma biblioteca externa; se ela não carregar, a parede continua funcionando
 try {
@@ -23,7 +23,7 @@ try {
   $('qr').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
 } catch (_) { $('qr').textContent = location.host; }
 
-const st = { desenho: null, fila: 0, offset: 0, clima: null, frame: 0 };
+const st = { desenho: null, offset: 0, clima: null, frame: 0 };
 const cv = $('cv'), layer = makeLayer(CW, CH);
 const pad = (n) => String(Math.floor(n)).padStart(2, '0');
 
@@ -52,15 +52,10 @@ function tick() {
   $('vazio').hidden = !!d;
   if (!d) return;
   const rest = d.fim - now;
-  $('num').textContent = `nº ${d.numero}${st.fila ? ` · +${st.fila} na fila` : ''}`;
-  if (rest <= 0) {
-    $('tmv').textContent = '';
-    $('tml').textContent = 'fica aqui até chegar o próximo desenho';
-    $('pg').style.width = '100%';
-    return;
-  }
+  // passaram os 20 min: a janela esvazia
+  if (rest <= 0) { st.desenho = null; tick(); return; }
+  $('num').textContent = `nº ${d.numero}`;
   $('tmv').textContent = `${pad(rest / 60)}:${pad(rest % 60)}`;
-  $('tml').textContent = 'até o próximo desenho';
   $('pg').style.width = `${(100 * (1 - rest / (d.fim - d.inicio))).toFixed(1)}%`;
 }
 
@@ -70,7 +65,6 @@ async function poll() {
     const r = await fetch(`/api/agora?tenho=${encodeURIComponent(atual)}`, { cache: 'no-store' });
     const a = await r.json();
     st.offset = a.agora * 1000 - Date.now();
-    st.fila = a.fila;
     const novo = a.desenho;
     if (!novo) st.desenho = null;
     else if (!st.desenho || novo.id !== st.desenho.id) {

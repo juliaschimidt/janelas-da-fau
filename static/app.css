@@ -74,57 +74,73 @@ html,body{overscroll-behavior:none;-webkit-user-select:none;user-select:none;-we
 #gire .gi{font-size:72px;line-height:1;display:inline-block;animation:gira 2s ease-in-out infinite}
 @keyframes gira{0%,20%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
 @media (orientation:portrait) and (max-width:900px){#gire{display:grid}#stage{display:none}}
-/* celular deitado: layout compacto 960×440 */
-body.m #stage{width:960px;height:440px}
-body.m .titlebar{left:8px;top:8px;width:216px;height:44px;gap:6px}
-body.m .title{font-size:15px}
-body.m .box{width:24px;height:24px}
-body.m .wxrow{left:232px;top:8px;width:720px;height:44px;gap:8px}
+.top,#Wcell{display:contents}
+/* celular deitado: layout próprio, sem escala, ocupando a tela inteira */
+body.m{display:block}
+body.m #stage{position:fixed;inset:0;left:0;top:0;width:auto;height:auto;transform:none;display:grid;
+ grid-template-columns:auto minmax(0,1fr) 128px;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"top top top" "tool win side";gap:8px;
+ padding:max(6px,env(safe-area-inset-top)) max(8px,env(safe-area-inset-right)) max(6px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}
+body.m .titlebar,body.m .wxrow,body.m .toolcol,body.m .bottom,body.m .win{position:relative;left:auto;top:auto;width:auto;height:auto}
+body.m .top{grid-area:top;display:flex;gap:8px;height:42px;min-width:0}
+body.m .titlebar{flex:none;gap:6px;padding:0 6px;box-shadow:2px 2px 0 var(--ink)}
+body.m .titlebar>.box:first-child,body.m .stripes{display:none}
+body.m .title{font-size:13px}
+body.m .titlebar .box{width:28px;height:28px;font-size:14px}
+body.m .wxrow{flex:1;gap:6px;min-width:0}
 body.m .loc{display:none}
-body.m .wx{gap:6px;padding:0 8px}
-body.m .wx .lab{font-size:10px;gap:3px}
-body.m .wx .lab svg{width:12px;height:12px}
-body.m .wx .val{font-size:20px}
+body.m .card{box-shadow:2px 2px 0 var(--ink)}
+body.m .wx{min-width:0;padding:0 6px;gap:4px}
+body.m .wx>div:first-child{display:flex;align-items:center;gap:3px;flex:none}
+body.m .wx .lab{font-size:0;gap:0}
+body.m .wx .lab svg{width:16px;height:16px}
+body.m .wx .val{font-size:18px}
 body.m .wx .val small{font-size:11px}
-body.m .wx .eff{font-size:10px;gap:3px;line-height:1.15}
-body.m .sws{margin-left:2px;gap:2px}
-body.m .sws>*{width:12px!important;height:12px!important}
-body.m #lv{margin-left:2px!important}
-body.m #lv svg{width:24px;height:auto}
-body.m .opsw{width:18px;height:18px;margin-left:2px}
-body.m .toolcol{left:8px;top:60px;width:112px;height:372px;padding:6px}
-body.m .toolcol .lab{font-size:10px;margin:2px 2px 4px}
-body.m .brush{height:50px;padding:0 6px;font-size:13px;gap:5px}
-body.m .brush svg{width:22px;height:22px;flex:none}
+body.m .wx .eff{font-size:10px;gap:3px;line-height:1.15;min-width:0}
+body.m .sws{margin-left:1px;gap:2px}
+body.m .sws>*{width:11px!important;height:11px!important;border-width:1.5px}
+body.m #lv{margin-left:1px!important}
+body.m #lv svg{width:13px;height:auto}
+body.m .opsw{width:16px;height:16px;margin-left:1px}
+body.m .toolcol{grid-area:tool;width:96px;min-height:0;padding:6px;overflow:hidden}
+body.m .toolcol .lab{font-size:10px;margin:0 2px 4px}
+body.m .toolcol .lab:first-child{display:none}
+body.m #brushes{flex:1;min-height:0;display:flex;flex-direction:column;gap:2px}
+body.m .brush{flex:1 1 0;min-height:30px;max-height:44px;height:auto;padding:0 6px;font-size:13px;gap:6px}
+body.m .brush svg{width:20px;height:20px;flex:none}
+body.m .toolcol .lab[style]{margin-top:6px!important}
 body.m .prevlab,body.m #prev{display:none}
-body.m .dots{flex-wrap:wrap;justify-content:center;gap:2px}
-body.m .dotwrap{width:32px;height:32px}
-body.m #W{left:128px!important;top:60px!important;width:672px!important}
-body.m .win{--fw:8px;--bar:12px;--banh:22px;--sill:12px;--ov:10px;--bw:2px}
-body.m .hint{font-size:18px;left:12px;top:6px}
-body.m .bottom{left:808px;top:60px;width:144px;height:372px;flex-direction:column;gap:8px}
-body.m .palc{height:56px;justify-content:center;padding:0 6px;gap:8px;flex:none}
+body.m .dots{flex-wrap:wrap;justify-content:center;gap:2px 4px}
+body.m .dotwrap{width:26px;height:26px}
+body.m #Wcell{grid-area:win;display:grid;place-items:center;min-width:0;min-height:0}
+body.m #W{left:auto!important;top:auto!important}
+body.m .win{--fw:8px;--bar:10px;--banh:20px;--sill:10px;--ov:8px;--bw:2px}
+body.m .hint{font-size:17px;left:10px;top:6px}
+body.m .bottom{grid-area:side;min-height:0;flex-direction:column;gap:6px}
+body.m .palc{flex:none;height:46px;justify-content:center;padding:0 4px;gap:8px}
 body.m .palc .t{display:none}
-body.m .blob{width:34px;height:34px}
-body.m .utils{height:58px;justify-content:center;padding:0 4px;gap:4px;flex:none}
-body.m .ub{width:42px;height:46px}
-body.m .now{flex-direction:column;align-items:stretch;padding:6px;gap:4px}
+body.m .blob{width:28px;height:28px}
+body.m .blob.on::after{inset:-5px}
+body.m .utils{flex:none;height:48px;justify-content:center;padding:0 4px;gap:4px}
+body.m .ub{width:36px;height:38px}
+body.m .ub svg{width:20px;height:20px}
+body.m .now{flex:1;min-height:0;flex-direction:column;align-items:stretch;justify-content:center;padding:5px;gap:4px;overflow:hidden}
 body.m #thumb{width:100%;outline-width:2px}
-body.m .now .lab{font-size:9px}
-body.m .now .tm{font-size:18px;gap:4px}
+body.m .now .lab{font-size:9px;letter-spacing:.4px}
+body.m .now .tm{font-size:17px;gap:4px}
 body.m .now .tm svg{width:14px;height:14px}
 body.m .now .tm small{font-size:9px}
 body.m .now .prog{height:5px}
-body.m .rep{width:100%;height:44px;flex-direction:row;font-size:12px}
-body.m .send{width:100%;height:76px;font-size:15px;flex:none}
-body.m .modal{width:520px;max-height:420px;overflow:auto;padding:16px 20px}
-body.m .mt{font-size:20px}
-body.m .mb{font-size:15px;margin-top:8px}
-body.m .mb canvas{margin:2px 0 6px;max-height:150px;width:auto;margin-left:auto;margin-right:auto}
-body.m .mb label{padding:4px 10px;margin-top:5px;min-height:44px}
+body.m .rep{width:100%;height:32px;flex:none;flex-direction:row;font-size:12px}
+body.m .send{flex:none;width:auto;height:52px;font-size:14px;gap:2px;box-shadow:3px 3px 0 var(--r)}
+body.m .ov{position:fixed}
+body.m .modal{width:min(520px,calc(100vw - 32px));max-height:calc(100% - 20px);overflow:auto;padding:14px 18px}
+body.m .mt{font-size:19px}
+body.m .mb{font-size:14px;margin-top:8px}
+body.m .mb canvas{max-height:110px;width:auto;margin:2px auto 6px}
+body.m .mb label{padding:4px 10px;margin-top:5px;min-height:40px}
 body.m .ma{margin-top:12px}
-body.m .toast{top:360px;font-size:14px}
-body.m .brush{height:48px}
-body.m .dots{gap:0}
-body.m .dotwrap{width:30px;height:30px}
-body.m .now .lab{flex-direction:column;align-items:flex-start;gap:0;white-space:normal}
+body.m .mbtn{height:44px}
+body.m .toast{top:auto;bottom:16px;font-size:14px}
+@media (max-height:340px){body.m #thumb{display:none}body.m .now .lab{display:none}}
+body.m .wx .eff{white-space:nowrap}
+@media (max-width:720px){body.m #lv{display:none!important}}

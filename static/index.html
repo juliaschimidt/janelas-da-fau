@@ -10,8 +10,9 @@
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
-<div id="gire"><div><div class="gi">⟳</div><b>GIRE O CELULAR</b><p>a janela é larga como um filme:<br>desenhe com o celular deitado</p></div></div>
+<div id="gire"><div><div class="gi">⟳</div><b>GIRE O CELULAR</b></div></div>
 <div id="stage">
+ <div class="top">
  <div class="titlebar"><div class="box"></div><div class="stripes"></div><div class="title">JANELAS DA FAU</div><div class="stripes"></div><button class="box" id="sobre" title="como funciona">?</button></div>
 
  <div class="wxrow">
@@ -19,6 +20,7 @@
   <div class="card wx"><div><div class="lab"><i data-i="termo"></i>Temperatura</div><div class="val"><span id="tv">--</span><small>°C</small></div></div><div class="eff"><span>define as<br>3 cores</span><span class="sws" id="sw"></span></div></div>
   <div class="card wx"><div><div class="lab"><i data-i="vento"></i>Vento</div><div class="val"><span id="vv">--</span><small> km/h</small></div></div><div class="eff"><span id="vt">traço balança<br>um pouco</span><span id="lv" style="margin-left:6px"></span></div></div>
   <div class="card wx"><div><div class="lab"><i data-i="gota"></i>Umidade</div><div class="val"><span id="uv">--</span><small>%</small></div></div><div class="eff"><span>traço <span id="ut">--</span>%<br>transparente</span><span class="opsw" id="us"></span></div></div>
+ </div>
  </div>
 
  <div class="card toolcol"><div class="lab">Pincéis</div><div id="brushes"></div>
@@ -28,7 +30,7 @@
   <canvas id="prev" width="300" height="110"></canvas>
  </div>
 
- <div class="win" id="W" style="left:214px;top:192px;width:1202px"></div>
+ <div id="Wcell"><div class="win" id="W" style="left:214px;top:192px;width:1202px"></div></div>
 
  <div class="bottom">
   <div class="card palc"><div id="blobs" style="display:flex;gap:12px"></div><div class="t hand">paleta de hoje<br><span id="pr" style="color:var(--r)">—</span></div></div>
