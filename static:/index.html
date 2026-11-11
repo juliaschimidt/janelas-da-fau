@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<title>janelas da FAU</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="ui.css">
+<link rel="stylesheet" href="win.css">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div id="gire"><div><div class="gi">⟳</div><b>GIRE O CELULAR</b><p>a janela é larga como um filme:<br>desenhe com o celular deitado</p></div></div>
+<div id="stage">
+ <div class="titlebar"><div class="box"></div><div class="stripes"></div><div class="title">JANELAS DA FAU</div><div class="stripes"></div><button class="box" id="sobre" title="como funciona">?</button></div>
+
+ <div class="wxrow">
+  <div class="loc"><div class="a">Cidade Universitária · SP</div><div class="b"><span id="dt">—</span> · <span class="live" id="fonte">● ao vivo</span></div><div class="c hand">o clima de agora muda o seu traço →</div></div>
+  <div class="card wx"><div><div class="lab"><i data-i="termo"></i>Temperatura</div><div class="val"><span id="tv">--</span><small>°C</small></div></div><div class="eff"><span>define as<br>3 cores</span><span class="sws" id="sw"></span></div></div>
+  <div class="card wx"><div><div class="lab"><i data-i="vento"></i>Vento</div><div class="val"><span id="vv">--</span><small> km/h</small></div></div><div class="eff"><span id="vt">traço balança<br>um pouco</span><span id="lv" style="margin-left:6px"></span></div></div>
+  <div class="card wx"><div><div class="lab"><i data-i="gota"></i>Umidade</div><div class="val"><span id="uv">--</span><small>%</small></div></div><div class="eff"><span>traço <span id="ut">--</span>%<br>transparente</span><span class="opsw" id="us"></span></div></div>
+ </div>
+
+ <div class="card toolcol"><div class="lab">Pincéis</div><div id="brushes"></div>
+  <div class="lab" style="margin-top:auto">Espessura</div>
+  <div class="dots" id="dots"></div>
+  <div class="lab prevlab" style="margin-top:18px">Prévia</div>
+  <canvas id="prev" width="300" height="110"></canvas>
+ </div>
+
+ <div class="win" id="W" style="left:214px;top:192px;width:1202px"></div>
+
+ <div class="bottom">
+  <div class="card palc"><div id="blobs" style="display:flex;gap:12px"></div><div class="t hand">paleta de hoje<br><span id="pr" style="color:var(--r)">—</span></div></div>
+  <div class="card utils">
+   <button class="ub" id="bBorr" title="borracha" data-i="borracha"></button>
+   <button class="ub" id="bUndo" title="desfazer (Ctrl+Z)" data-i="desfazer"></button>
+   <button class="ub" id="bLixo" title="apagar desenho" data-i="lixo"></button>
+  </div>
+  <div class="card now">
+   <canvas id="thumb" width="320" height="136"></canvas>
+   <div class="info">
+    <div class="lab"><span><span class="live">●</span> agora na parede</span><span id="fila" class="fila"></span></div>
+    <div class="tm"><span id="ck" style="display:flex"></span><span id="tmv">--:--</span><small id="tml">até<br>trocar</small></div>
+    <div class="prog"><b id="pg" style="width:0"></b></div>
+   </div>
+   <button class="rep" id="bRep"><span id="fl" style="display:flex"></span>denunciar</button>
+  </div>
+  <button class="send" id="bSend"><span>ENVIAR PRA</span><span>JANELA <i data-i="seta"></i></span></button>
+ </div>
+
+ <div class="ov" id="ov" hidden><div class="modal" role="dialog" aria-modal="true">
+  <div class="mt" id="mt"></div><div class="mb" id="mb"></div>
+  <div class="ma"><button class="mbtn" id="mNo">cancelar</button><button class="mbtn ok" id="mOk">ok</button></div>
+ </div></div>
+ <div class="toast" id="toast" hidden></div>
+</div>
+<script src="config.js"></script>
+<script src="icons.js"></script>
+<script src="win.js"></script>
+<script src="draw.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: janelas-da-fau
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    envVars:
+      - key: MODERACAO_SENHA
+        sync: false

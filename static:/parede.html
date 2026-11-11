@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>janelas da FAU · parede</title>
+<link rel="stylesheet" href="fonts.css">
+<link rel="stylesheet" href="win.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--ink:#141414;--r:#ff4a2b}
+html,body{width:100%;height:100%;overflow:hidden;cursor:none}
+body{background:#f2ecdf;background-image:radial-gradient(#14141418 1.4px,transparent 1.8px);background-size:9px 9px;color:var(--ink);font-family:Sans;font-weight:500}
+#stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:50% 50%}
+.top{position:absolute;left:60px;right:60px;top:40px;height:100px;display:flex;align-items:center;gap:18px}
+.tt{flex:1}
+.title{font-family:Pix;font-weight:700;font-size:44px;letter-spacing:1px;line-height:1}
+.live{font-size:18px;margin-top:12px;opacity:.85}.live b{color:var(--r)}
+.chip{border:3px solid var(--ink);background:#fffaf0;box-shadow:4px 4px 0 var(--ink);height:96px;width:250px;padding:9px 14px;display:flex;flex-direction:column;justify-content:space-between}
+.lab{font-weight:700;font-size:13px;letter-spacing:1px;text-transform:uppercase;display:flex;align-items:center;gap:7px}
+.row{display:flex;align-items:center;justify-content:space-between}
+.val{font-weight:700;font-size:36px;line-height:1}.val small{font-size:17px}
+.eff{font-family:Cav;font-size:21px;line-height:1;white-space:nowrap}
+.sw{width:20px;height:20px;border:2px solid var(--ink);display:inline-block}
+.qr{border:3px solid var(--ink);background:#fff;box-shadow:4px 4px 0 var(--r);height:96px;width:290px;padding:6px 12px 6px 6px;display:flex;align-items:center;gap:12px}
+.qr .code{width:80px;height:80px;flex:none}.qr .code svg{width:100%;height:100%;display:block}
+.q1{font-family:Pix;font-weight:700;font-size:17px;line-height:1.1}
+.q2{font-family:Cav;font-size:19px;line-height:1;margin-top:4px}
+.win .dd{inset:0}
+#cv{position:absolute;inset:0;width:100%;height:100%;display:block;transition:opacity .8s}
+#cv.out{opacity:0}
+.tmr{position:absolute;left:22px;top:18px;z-index:3;display:flex;align-items:center;gap:12px;padding:8px 16px;background:#fffaf0e6;border:3px solid var(--ink);box-shadow:4px 4px 0 #00000055;font-size:20px}
+.tmr b{font-size:26px}
+.prog{width:140px;height:12px;border:2px solid var(--ink);background:#fff;position:relative}.prog i{position:absolute;left:0;top:0;bottom:0;background:var(--ink)}
+.n{opacity:.6;font-size:16px}
+.vazio{position:absolute;inset:0;display:grid;place-items:center;z-index:2;color:#fffaf0;text-align:center;font-family:Cav;font-size:56px;line-height:1.1;opacity:.85}
+.vazio small{display:block;font-family:Sans;font-size:24px;margin-top:14px;opacity:.75}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div id="stage">
+ <div class="top">
+  <div class="tt"><div class="title">JANELAS DA FAU</div><div class="live"><b id="fonte">● ao vivo</b> · céu da Cidade Universitária · <span id="hora">--:--</span></div></div>
+  <div class="chip"><div class="lab"><span data-i="termo"></span>Temperatura</div>
+   <div class="row"><div class="val"><span id="tv">--</span><small>°C</small></div><div id="sw" style="display:flex;gap:4px"></div></div>
+   <div class="eff">→ escolhe as cores</div></div>
+  <div class="chip"><div class="lab"><span data-i="vento"></span>Vento</div>
+   <div class="row"><div class="val"><span id="vv">--</span><small> km/h</small></div><span id="lv"></span></div>
+   <div class="eff" id="vt">→ traço balança</div></div>
+  <div class="chip"><div class="lab"><span data-i="gota"></span>Umidade</div>
+   <div class="row"><div class="val"><span id="uv">--</span><small>%</small></div><span class="sw" id="us" style="width:34px;height:24px"></span></div>
+   <div class="eff" id="ut">→ traço transparente</div></div>
+  <div class="qr"><div class="code" id="qr"></div><div><div class="q1">ESCANEIE E DESENHE<br>A PRÓXIMA JANELA</div><div class="q2">cada desenho fica 20 min</div></div></div>
+ </div>
+ <div class="win" id="W" style="left:60px;top:176px;width:1800px;--bw:4px;--fw:20px;--bar:30px;--banh:44px;--sill:28px;--ov:26px"></div>
+</div>
+<script src="icons.js"></script>
+<script src="win.js"></script>
+<script src="config.js"></script>
+<script src="draw.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="parede.js"></script>
+</body>
+</html>

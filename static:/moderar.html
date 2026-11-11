@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>janelas da FAU · moderação</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font:16px/1.4 system-ui,sans-serif;color:#141414;background:#f2ecdf;padding:24px;max-width:1000px;margin:0 auto}
+h1{font-size:24px;margin-bottom:4px}
+.sub{color:#555;margin-bottom:24px}
+button,input{font:inherit}
+button{min-height:44px;padding:0 16px;border:2px solid #141414;background:#fff;font-weight:700;cursor:pointer}
+button.x{background:#c62f15;border-color:#c62f15;color:#fff}
+button:disabled{opacity:.4;cursor:default}
+input{min-height:44px;padding:0 12px;border:2px solid #141414;width:260px}
+label{display:block;font-weight:700;margin-bottom:8px}
+.bar{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
+.erro{color:#c62f15;font-weight:700;margin-top:12px}
+.item{display:flex;gap:16px;align-items:center;background:#fffaf0;border:2px solid #141414;padding:12px;margin-bottom:12px}
+.item.den{border-color:#c62f15;box-shadow:0 0 0 2px #c62f15}
+.item.rem{opacity:.5}
+canvas{width:240px;aspect-ratio:2.35;background:#0f1130;flex:none}
+.info{flex:1;min-width:0}
+.n{font-weight:700;font-size:18px}
+.tag{display:inline-block;padding:2px 8px;border:2px solid #141414;font-size:13px;font-weight:700;margin-left:8px}
+.tag.on{background:#141414;color:#fff}
+.mot{color:#c62f15;font-weight:700;margin-top:4px}
+.vazio{padding:24px 0;color:#555}
+@media (max-width:640px){.item{flex-direction:column;align-items:stretch}canvas{width:100%}}
+</style>
+</head>
+<body>
+<h1>janelas da FAU · moderação</h1>
+<p class="sub">Página interna da equipe. Não divulgue este endereço nem a senha.</p>
+
+<form id="login">
+ <label for="senha">Senha da moderação</label>
+ <div class="bar"><input id="senha" type="password" autocomplete="current-password" required><button>Entrar</button></div>
+ <p class="erro" id="erro" hidden></p>
+</form>
+
+<div id="painel" hidden>
+ <div class="bar">
+  <button id="baixar">Baixar todos os desenhos</button>
+  <button id="sair">Sair</button>
+  <span id="resumo"></span>
+ </div>
+ <div id="lista"></div>
+</div>
+
+<script src="config.js"></script>
+<script src="draw.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let senha = sessionStorage.getItem('senha') || '';
+
+async function api(path, opts = {}) {
+  const r = await fetch(path, { ...opts, headers: { 'X-Senha': senha, 'Content-Type': 'application/json' } });
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).erro || `erro ${r.status}`);
+  return r;
+}
+
+const hora = (t) => new Date(t * 1000).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+async function carregar() {
+  try {
+    const { desenhos } = await (await api('/api/moderacao')).json();
+    $('login').hidden = true; $('painel').hidden = false;
+    const den = desenhos.filter((d) => d.denuncias.length && d.status !== 'removido').length;
+    $('resumo').textContent = `${desenhos.length} desenhos · ${den} com denúncia`;
+    $('lista').innerHTML = desenhos.length ? '' : '<p class="vazio">Nenhum desenho enviado ainda. Eles aparecem aqui assim que alguém enviar.</p>';
+    desenhos.forEach((d) => {
+      const el = document.createElement('div');
+      el.className = `item ${d.denuncias.length ? 'den' : ''} ${d.status === 'removido' ? 'rem' : ''}`;
+      el.innerHTML = `<canvas width="480" height="204"></canvas><div class="info">
+        <div class="n">Desenho nº ${d.numero}<span class="tag ${d.status === 'na parede' ? 'on' : ''}">${d.status}</span></div>
+        <div>enviado ${hora(d.criado)} · ${d.status === 'na fila' ? 'entra' : 'entrou'} na parede ${hora(d.inicio)}</div>
+        ${d.denuncias.length ? `<div class="mot">${d.denuncias.length} denúncia(s): ${d.denuncias.map((m) => m || 'sem motivo').join(' · ')}</div>` : ''}
+        </div>${d.status === 'removido' ? '' : '<button class="x">Remover</button>'}`;
+      const cv = el.querySelector('canvas');
+      try { renderDrawing(cv, makeLayer(480, 204), d.tracos, 0, 0, opacidadePara(d.clima)); } catch (_) { /* desenho ilegível */ }
+      const b = el.querySelector('button');
+      if (b) b.onclick = async () => {
+        if (!confirm(`Remover o desenho nº ${d.numero}? Ele sai da parede/fila na hora e não volta.`)) return;
+        b.disabled = true;
+        await api('/api/moderacao/remover', { method: 'POST', body: JSON.stringify({ id: d.id }) });
+        carregar();
+      };
+      $('lista').appendChild(el);
+    });
+  } catch (e) {
+    $('login').hidden = false; $('painel').hidden = true;
+    if (senha) { $('erro').textContent = e.message; $('erro').hidden = false; }
+  }
+}
+
+$('login').onsubmit = (e) => {
+  e.preventDefault();
+  senha = $('senha').value; sessionStorage.setItem('senha', senha);
+  carregar();
+};
+$('sair').onclick = () => { sessionStorage.removeItem('senha'); senha = ''; location.reload(); };
+$('baixar').onclick = async () => {
+  const blob = await (await api('/api/moderacao/baixar')).blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'janelas_da_fau_desenhos.json'; a.click();
+};
+if (senha) carregar();
+setInterval(() => { if (!$('painel').hidden) carregar(); }, 15000);
+</script>
+</body>
+</html>
