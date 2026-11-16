@@ -23,6 +23,12 @@ const CONFIG = {
 const temDados = (c) => c && c.temperatura != null && c.vento != null && c.umidade != null;
 const paletaPara = (t) => (t == null ? CONFIG.semDados : CONFIG.paletas.find((p) => t >= p.min));
 const ventoPara = (v) => (v == null ? { nivel: -1, texto: 'sem dados' } : CONFIG.vento.find((n) => v < n.max));
-// umidade = transparência: 80% de umidade → traço 80% transparente (20% de opacidade)
-const opacidadePara = (c) => (temDados(c) ? Math.max(0.08, Math.min(1, 1 - c.umidade / 100)) : 1);
+// umidade = transparência. Regra interna para o projetor: a opacidade nunca fica abaixo de 40%.
+// 0% de umidade → 100% de opacidade; 100% de umidade → 40%. Na tela continua aparecendo a umidade real.
+const OPACIDADE_MINIMA = 0.4;
+const opacidadePara = (c) => {
+  if (!temDados(c)) return 1;
+  const u = Math.max(0, Math.min(100, c.umidade)) / 100;
+  return 1 - u * (1 - OPACIDADE_MINIMA);
+};
 const amplitudePara = (c) => CONFIG.amplitude(temDados(c) ? c.vento : 0);
